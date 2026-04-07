@@ -8,6 +8,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from components.gemini_insights import exibir_insight, montar_contexto_geral
+
 # ---------------------------------------------------------------------------
 # Guard: dados precisam ter sido carregados pelo app.py
 # ---------------------------------------------------------------------------
@@ -107,6 +109,18 @@ col4.metric(
     label="Áreas / Órgãos",
     value=f"{n_funcoes} / {n_orgaos}",
 )
+
+# Insight com IA — logo após os KPIs, contextualiza os gráficos
+variacao_yoy = variacao_pct if delta_total is not None else None
+contexto_geral = montar_contexto_geral(
+    total_pago=total_metrica,
+    maior_funcao=maior_nome,
+    pct_maior=maior_pct,
+    n_funcoes=n_funcoes,
+    variacao_yoy=variacao_yoy,
+    ano=ano,
+)
+exibir_insight(contexto_geral, tipo="geral", titulo="💡 Destaques do orçamento")
 
 
 # ---------------------------------------------------------------------------
@@ -263,10 +277,3 @@ else:
     st.plotly_chart(fig_waffle, use_container_width=True)
 
 
-# ---------------------------------------------------------------------------
-# 5. Placeholder de análise com IA
-# ---------------------------------------------------------------------------
-st.divider()
-st.info(
-    "💡 **Análise inteligente** — *Textos dinâmicos com IA serão integrados em breve.*"
-)

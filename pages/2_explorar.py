@@ -7,6 +7,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from components.gemini_insights import exibir_insight, montar_contexto_comparativo
+
 # ---------------------------------------------------------------------------
 # Guard
 # ---------------------------------------------------------------------------
@@ -111,6 +113,18 @@ else:
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
+    # Insight com IA — análise de tendência após o line chart
+    dados_por_ano = {}
+    for a in sorted(df_completo["Ano"].unique()):
+        df_a = df_completo[df_completo["Ano"] == a]
+        total_a = df_a[metrica].sum()
+        por_funcao = df_a.groupby("Nome Função")[metrica].sum()
+        maior = por_funcao.idxmax() if len(por_funcao) > 0 else "N/A"
+        dados_por_ano[int(a)] = {"total": total_a, "maior_funcao": maior}
+
+    contexto_comp = montar_contexto_comparativo(dados_por_ano)
+    exibir_insight(contexto_comp, tipo="comparativo", titulo="📈 Análise de tendência")
+
 # ---------------------------------------------------------------------------
 # 4. Tabela detalhada
 # ---------------------------------------------------------------------------
@@ -134,10 +148,3 @@ with st.expander("Ver tabela completa"):
         },
     )
 
-# ---------------------------------------------------------------------------
-# 5. Placeholder análise com IA
-# ---------------------------------------------------------------------------
-st.divider()
-st.info(
-    "📈 **Análise de tendência** — *Textos dinâmicos com IA serão integrados em breve.*"
-)
