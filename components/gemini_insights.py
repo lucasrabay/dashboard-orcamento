@@ -138,7 +138,9 @@ def montar_contexto_simulacao(
 # Exibição padronizada
 # ---------------------------------------------------------------------------
 def exibir_insight(contexto: str, tipo: str, titulo: str) -> None:
-    """Gera e exibe o insight dentro de um st.info."""
-    with st.spinner("Gerando análise com IA..."):
+    """Gera e exibe o insight com visual refinado."""
+    from components.ui import insight_box
+
+    with st.spinner("Gerando análise..."):
         texto = gerar_insight(contexto, tipo)
-    st.info(f"**{titulo}**\n\n{texto}")
+    insight_box(title=titulo, content=texto)

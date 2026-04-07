@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from components.gemini_insights import exibir_insight, montar_contexto_geral
+from components.ui import metric_card, page_header, section_header
 
 # ---------------------------------------------------------------------------
 # Guard: dados precisam ter sido carregados pelo app.py
@@ -49,8 +50,11 @@ def truncar(texto: str, n: int = 25) -> str:
 # ---------------------------------------------------------------------------
 # 1. Título e contexto
 # ---------------------------------------------------------------------------
-st.title("📊 Visão Geral do Orçamento Federal")
-st.caption(f"Ano de referência: **{ano}** · Métrica: **{metrica}**")
+page_header(
+    icon_name="bar_chart",
+    title="Visão Geral",
+    subtitle=f"Análise consolidada do orçamento federal — exercício {ano}",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -90,25 +94,29 @@ n_funcoes = df_filtrado["Nome Função"].nunique()
 n_orgaos = df_filtrado["Nome Órgão Superior"].nunique()
 
 col1, col2, col3, col4 = st.columns(4)
-col1.metric(
-    label=f"Total ({metrica.replace(' (R$)', '')})",
-    value=formatar_bilhoes(total_metrica),
-    delta=delta_total,
-)
-col2.metric(
-    label="Total Empenhado",
-    value=formatar_bilhoes(total_empenhado),
-)
-col3.metric(
-    label="Maior área",
-    value=truncar(maior_nome, 25),
-    delta=f"{maior_pct:.1f}% do total",
-    delta_color="off",
-)
-col4.metric(
-    label="Áreas / Órgãos",
-    value=f"{n_funcoes} / {n_orgaos}",
-)
+with col1:
+    metric_card(
+        label="TOTAL PAGO",
+        value=formatar_bilhoes(total_metrica),
+        delta=f"{variacao_pct:+.1f}% vs {ano - 1}" if delta_total is not None else "",
+        delta_positive=(variacao_pct >= 0) if delta_total is not None else True,
+    )
+with col2:
+    metric_card(
+        label="TOTAL EMPENHADO",
+        value=formatar_bilhoes(total_empenhado),
+    )
+with col3:
+    metric_card(
+        label="MAIOR ÁREA",
+        value=truncar(maior_nome, 25),
+        help_text=f"{maior_pct:.1f}% do orçamento total",
+    )
+with col4:
+    metric_card(
+        label="ÁREAS / ÓRGÃOS",
+        value=f"{n_funcoes} / {n_orgaos}",
+    )
 
 # Insight com IA — logo após os KPIs, contextualiza os gráficos
 variacao_yoy = variacao_pct if delta_total is not None else None
@@ -120,16 +128,19 @@ contexto_geral = montar_contexto_geral(
     variacao_yoy=variacao_yoy,
     ano=ano,
 )
-exibir_insight(contexto_geral, tipo="geral", titulo="💡 Destaques do orçamento")
+exibir_insight(contexto_geral, tipo="geral", titulo="Destaques do orçamento")
 
 
 # ---------------------------------------------------------------------------
 # 3. Gráficos — Treemap + Top 10 órgãos
 # ---------------------------------------------------------------------------
-st.divider()
 col_tree, col_bar = st.columns([3, 2])
 
 with col_tree:
+    section_header(
+        title="Composição por área",
+        subtitle=f"Distribuição hierárquica do orçamento de {ano}",
+    )
     # Treemap não aceita valores negativos → filtra
     df_tree = df_filtrado[df_filtrado[metrica] > 0].copy()
     if df_tree.empty:
@@ -140,8 +151,6 @@ with col_tree:
             path=["Nome Função", "Nome Subfunção"],
             values=metrica,
             color="Nome Função",
-            color_discrete_sequence=px.colors.qualitative.Set2,
-            title=f"Composição do orçamento por área — {ano}",
         )
         fig_tree.update_traces(
             textinfo="label+percent parent",
@@ -150,13 +159,14 @@ with col_tree:
             + ": R$ %{value:,.2f}<br>"
             + "<extra></extra>",
         )
-        fig_tree.update_layout(
-            height=500,
-            margin=dict(t=50, l=10, r=10, b=10),
-        )
+        fig_tree.update_layout(height=500)
         st.plotly_chart(fig_tree, use_container_width=True)
 
 with col_bar:
+    section_header(
+        title=f"Top 10 órgãos",
+        subtitle=f"Maiores executores do orçamento em {ano}",
+    )
     top_orgaos = (
         df_filtrado.groupby("Nome Órgão Superior", as_index=False)[metrica]
         .sum()
@@ -172,10 +182,9 @@ with col_bar:
             x=metrica,
             y="Nome Órgão Superior",
             orientation="h",
-            title=f"Top 10 órgãos — {ano}",
         )
         fig_bar.update_traces(
-            marker_color="#4C78A8",
+            marker_color="#059669",
             hovertemplate="<b>%{y}</b><br>"
             + metrica
             + ": R$ %{x:,.2f}<br>"
@@ -185,7 +194,6 @@ with col_bar:
             height=500,
             yaxis_title=None,
             xaxis_title=metrica,
-            margin=dict(t=50, l=10, r=10, b=10),
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -193,7 +201,10 @@ with col_bar:
 # ---------------------------------------------------------------------------
 # 4. Waffle chart — "Para onde vai cada R$ 1,00"
 # ---------------------------------------------------------------------------
-st.divider()
+section_header(
+    title="Para onde vai cada R$ 1,00",
+    subtitle="Cada quadrado representa 1% do orçamento total",
+)
 
 df_waffle = (
     df_filtrado[df_filtrado[metrica] > 0]
@@ -254,7 +265,6 @@ else:
         )
 
     fig_waffle.update_layout(
-        title=f"Para onde vai cada R$ 1,00 de imposto — {ano}",
         height=500,
         plot_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(

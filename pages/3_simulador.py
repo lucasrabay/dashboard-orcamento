@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from components.gemini_insights import exibir_insight, montar_contexto_simulacao
+from components.ui import metric_card, page_header, section_header
 
 # ---------------------------------------------------------------------------
 # Guard
@@ -47,8 +48,11 @@ def truncar(texto: str, n: int = 40) -> str:
 # ---------------------------------------------------------------------------
 # 1. Título e contexto
 # ---------------------------------------------------------------------------
-st.title("⚙️ Simulador de Cenários")
-st.caption(f"Redistribua o orçamento de {ano} e veja o impacto")
+page_header(
+    icon_name="sliders",
+    title="Simulador de Cenários",
+    subtitle=f"Redistribua o orçamento de {ano} e analise o impacto",
+)
 
 # ---------------------------------------------------------------------------
 # 2. Preparação dos dados — top 8 funções do ano selecionado
@@ -62,16 +66,30 @@ df_ano = (
 top8 = df_ano.head(8).reset_index(drop=True)
 total_original = top8[metrica].sum()
 
-st.info(
-    f"**Orçamento base ({ano}):** {formatar_bilhoes(total_original)} · "
-    f"**{len(top8)} maiores áreas** sendo simuladas · "
-    "Ajuste os sliders abaixo para simular uma realocação."
-)
+st.markdown(f"""
+<div style="
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+">
+    <div style="font-size: 13px; color: #64748B;">
+        Orçamento base de <strong style="color: #0F172A;">{ano}</strong>:
+        <strong style="color: #059669;">{formatar_bilhoes(total_original)}</strong>
+        distribuídos entre as <strong style="color: #0F172A;">{len(top8)} maiores áreas</strong>.
+        Ajuste os controles abaixo para simular uma realocação.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # 3. Sliders de realocação
 # ---------------------------------------------------------------------------
-st.subheader("🎛️ Ajuste a distribuição (variação %)")
+section_header(
+    title="Ajuste a distribuição",
+    subtitle="Variação percentual sobre o valor original de cada área",
+)
 
 col_esq, col_dir = st.columns(2)
 ajustes: list[float] = []
@@ -101,32 +119,34 @@ diferenca = total_simulado - total_original
 # ---------------------------------------------------------------------------
 # 4. KPIs do cenário
 # ---------------------------------------------------------------------------
-st.divider()
-k1, k2, k3 = st.columns(3)
-
-k1.metric(label="Orçamento original", value=formatar_bilhoes(total_original))
-
 variacao_pct = (
     (total_simulado - total_original) / total_original * 100
     if total_original != 0
     else 0
 )
-k2.metric(
-    label="Orçamento simulado",
-    value=formatar_bilhoes(total_simulado),
-    delta=f"{variacao_pct:+.1f}%",
-)
 
-k3.metric(
-    label="Diferença",
-    value=formatar_bilhoes(abs(diferenca)),
-    delta="Aumento" if diferenca >= 0 else "Redução",
-    delta_color="normal" if diferenca >= 0 else "inverse",
-)
+k1, k2, k3 = st.columns(3)
+with k1:
+    metric_card(label="ORÇAMENTO ORIGINAL", value=formatar_bilhoes(total_original))
+with k2:
+    metric_card(
+        label="ORÇAMENTO SIMULADO",
+        value=formatar_bilhoes(total_simulado),
+        delta=f"{variacao_pct:+.1f}%",
+        delta_positive=(diferenca >= 0),
+    )
+with k3:
+    metric_card(
+        label="DIFERENÇA",
+        value=formatar_bilhoes(abs(diferenca)),
+        help_text="Aumento" if diferenca > 0 else ("Redução" if diferenca < 0 else "Sem mudança"),
+    )
 
 # ---------------------------------------------------------------------------
 # 5. Gráfico comparativo — barras agrupadas
 # ---------------------------------------------------------------------------
+section_header(title="Comparativo real vs simulado")
+
 nomes = top8["Nome Função"].tolist()
 
 fig = go.Figure(
@@ -135,31 +155,29 @@ fig = go.Figure(
             name="Real",
             x=nomes,
             y=top8[metrica],
-            marker_color="#4C78A8",
+            marker_color="#0F172A",
             hovertemplate="<b>%{x}</b><br>Real: R$ %{y:,.0f}<extra></extra>",
         ),
         go.Bar(
             name="Simulado",
             x=nomes,
             y=top8["Simulado"],
-            marker_color="#F58518",
+            marker_color="#059669",
             hovertemplate="<b>%{x}</b><br>Simulado: R$ %{y:,.0f}<extra></extra>",
         ),
     ]
 )
 fig.update_layout(
     barmode="group",
-    title="Orçamento real vs. cenário simulado",
     yaxis_tickformat=",",
     height=450,
-    margin=dict(t=50, l=10, r=10, b=10),
 )
 st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------------------------------
 # 6. Tabela de mudanças
 # ---------------------------------------------------------------------------
-with st.expander("📋 Detalhamento das mudanças"):
+with st.expander("Detalhamento das mudanças"):
     df_tab = pd.DataFrame(
         {
             "Área": top8["Nome Função"],
@@ -184,7 +202,6 @@ with st.expander("📋 Detalhamento das mudanças"):
 # ---------------------------------------------------------------------------
 # 7. Insight com IA sobre o cenário simulado
 # ---------------------------------------------------------------------------
-st.divider()
 algum_slider_movido = any(a != 0 for a in ajustes)
 
 if algum_slider_movido:
@@ -194,9 +211,11 @@ if algum_slider_movido:
         if row["Ajuste %"] != 0
     }
     contexto_sim = montar_contexto_simulacao(realocacoes, total_original)
-    exibir_insight(contexto_sim, tipo="simulacao", titulo="🤖 Análise do cenário simulado")
+    exibir_insight(contexto_sim, tipo="simulacao", titulo="Análise do cenário simulado")
 else:
-    st.info(
-        "💡 *Ajuste os sliders acima para simular uma realocação "
-        "e receber uma análise personalizada.*"
+    st.markdown(
+        '<div style="color: #64748B; font-size: 14px; padding: 16px 0;">'
+        "Ajuste os sliders acima para simular uma realocação e receber uma análise personalizada."
+        "</div>",
+        unsafe_allow_html=True,
     )

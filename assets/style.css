@@ -1,0 +1,349 @@
+/* ==========================================================================
+   Para Onde Vai Seu Imposto? — Design System CSS
+   Estilo: sóbrio, monocromático + accent verde (#059669)
+   ========================================================================== */
+
+/* --- Variáveis de referência (comentário, Streamlit não suporta :root vars bem) ---
+   Background primário:   #FFFFFF
+   Background secundário: #F8FAFC
+   Background terciário:  #F1F5F9
+   Texto primário:        #0F172A
+   Texto secundário:      #475569
+   Texto terciário:       #94A3B8
+   Border:                #E2E8F0
+   Accent:                #059669
+   Accent hover:          #047857
+   Accent bg:             #D1FAE5
+*/
+
+/* ==========================================================================
+   1. Container principal
+   ========================================================================== */
+
+.stMainBlockContainer {
+    max-width: 1200px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 2rem;
+}
+
+/* ==========================================================================
+   2. Tipografia
+   ========================================================================== */
+
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0F172A;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #0F172A;
+    letter-spacing: -0.01em;
+}
+
+h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0F172A;
+}
+
+p, li, span, label {
+    font-size: 15px;
+    color: #475569;
+    line-height: 1.6;
+}
+
+/* Caption */
+[data-testid="stCaptionContainer"] p {
+    font-size: 13px;
+    color: #94A3B8;
+}
+
+/* ==========================================================================
+   3. Sidebar
+   ========================================================================== */
+
+[data-testid="stSidebar"] {
+    background-color: #F8FAFC;
+    border-right: 1px solid #E2E8F0;
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0F172A;
+    letter-spacing: -0.01em;
+}
+
+[data-testid="stSidebar"] p {
+    color: #64748B;
+    font-size: 13px;
+}
+
+/* Navegação sidebar */
+[data-testid="stSidebar"] [data-testid="stSidebarNav"] a {
+    padding: 10px 16px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+    font-size: 14px;
+    color: #475569;
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarNav"] a:hover {
+    background-color: #F1F5F9;
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarNav"] a[aria-selected="true"] {
+    background-color: #D1FAE5;
+    color: #047857;
+    font-weight: 600;
+}
+
+/* Labels de widget na sidebar */
+[data-testid="stSidebar"] .stSelectbox label,
+[data-testid="stSidebar"] .stMultiSelect label,
+[data-testid="stSidebar"] .stRadio label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* ==========================================================================
+   4. KPIs — st.metric
+   ========================================================================== */
+
+[data-testid="stMetric"] {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.15s ease;
+}
+
+[data-testid="stMetric"]:hover {
+    border-color: #CBD5E1;
+}
+
+/* Label do metric */
+[data-testid="stMetric"] [data-testid="stMetricLabel"] label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Valor do metric */
+[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+/* Delta positivo */
+[data-testid="stMetric"] [data-testid="stMetricDelta"] svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ==========================================================================
+   5. st.info — visual limpo com accent verde
+   ========================================================================== */
+
+[data-testid="stAlert"][data-baseweb*="notification"] {
+    background-color: #F0FDF4;
+    border: none;
+    border-left: 3px solid #059669;
+    border-radius: 6px;
+    padding: 16px 20px;
+}
+
+[data-testid="stAlert"] p {
+    color: #1E293B;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   6. st.divider
+   ========================================================================== */
+
+[data-testid="stHorizontalBlock"] hr,
+hr {
+    border: none;
+    border-top: 1px solid #E2E8F0;
+    margin: 24px 0;
+}
+
+/* ==========================================================================
+   7. Botões
+   ========================================================================== */
+
+.stButton > button {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 20px;
+    border: 1px solid #E2E8F0;
+    transition: all 0.15s ease;
+}
+
+.stButton > button:hover {
+    border-color: #059669;
+    color: #059669;
+}
+
+.stButton > button[kind="primary"] {
+    background-color: #059669;
+    border-color: #059669;
+    color: white;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background-color: #047857;
+    border-color: #047857;
+}
+
+/* ==========================================================================
+   8. Inputs — selectbox, multiselect, slider
+   ========================================================================== */
+
+/* Selectbox e multiselect */
+[data-baseweb="select"] > div {
+    border-radius: 8px;
+    border-color: #E2E8F0;
+    transition: border-color 0.15s ease;
+}
+
+[data-baseweb="select"] > div:focus-within {
+    border-color: #059669;
+    box-shadow: 0 0 0 1px #059669;
+}
+
+/* Chips do multiselect */
+[data-baseweb="tag"] {
+    background-color: #D1FAE5;
+    border-radius: 6px;
+}
+
+[data-baseweb="tag"] span {
+    color: #047857;
+    font-size: 13px;
+}
+
+/* Slider thumb e track */
+[data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+    background-color: #059669;
+    border-color: #059669;
+}
+
+[data-testid="stSlider"] [data-baseweb="slider"] [data-testid="stTickBar"] {
+    background: #E2E8F0;
+}
+
+/* Labels de widgets (fora da sidebar) */
+.stSelectbox label p,
+.stMultiSelect label p,
+.stSlider label p {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+}
+
+/* ==========================================================================
+   9. st.expander
+   ========================================================================== */
+
+[data-testid="stExpander"] {
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+[data-testid="stExpander"] summary {
+    background-color: #F8FAFC;
+    padding: 12px 16px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #0F172A;
+    transition: background-color 0.15s ease;
+}
+
+[data-testid="stExpander"] summary:hover {
+    background-color: #F1F5F9;
+}
+
+[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+    padding: 16px;
+}
+
+/* ==========================================================================
+   10. st.dataframe
+   ========================================================================== */
+
+[data-testid="stDataFrame"] {
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   11. Plotly — fundo transparente
+   ========================================================================== */
+
+.stPlotlyChart {
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   12. Spinner
+   ========================================================================== */
+
+[data-testid="stSpinner"] p {
+    font-size: 13px;
+    color: #94A3B8;
+}
+
+/* ==========================================================================
+   13. Warning / Error
+   ========================================================================== */
+
+[data-testid="stAlert"][kind="warning"] {
+    background-color: #FFFBEB;
+    border-left: 3px solid #D97706;
+}
+
+[data-testid="stAlert"][kind="error"] {
+    background-color: #FEF2F2;
+    border-left: 3px solid #DC2626;
+}
+
+/* ==========================================================================
+   14. Scrollbar sutil
+   ========================================================================== */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}

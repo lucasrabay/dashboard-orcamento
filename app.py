@@ -5,8 +5,14 @@ Uso: streamlit run app.py
 """
 
 import os
+
 import pandas as pd
 import streamlit as st
+
+from components.plotly_theme import register_theme
+from components.ui import footer
+
+register_theme()
 
 # ---------------------------------------------------------------------------
 # Configuração da página
@@ -16,6 +22,12 @@ st.set_page_config(
     page_icon="💰",
     layout="wide",
 )
+
+# Carregar CSS customizado
+CSS_PATH = os.path.join(os.path.dirname(__file__), "assets", "style.css")
+if os.path.exists(CSS_PATH):
+    with open(CSS_PATH) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "despesas_limpo.csv")
 
@@ -51,9 +63,23 @@ except FileNotFoundError:
 # Sidebar global — filtros compartilhados por todas as páginas
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.title("💰 Para Onde Vai Seu Imposto?")
-    st.caption("Fonte: Portal da Transparência do Governo Federal")
-    st.divider()
+    st.markdown("""
+    <div style="padding: 8px 0 24px 0; border-bottom: 1px solid #E2E8F0; margin-bottom: 24px;">
+        <div style="font-size: 16px; font-weight: 700; color: #0F172A; letter-spacing: -0.01em;">
+            Orçamento Federal
+        </div>
+        <div style="font-size: 12px; color: #64748B; margin-top: 2px;">
+            Para onde vai seu imposto
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        '<div style="font-size: 11px; font-weight: 600; color: #94A3B8; '
+        'text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">'
+        "FILTROS</div>",
+        unsafe_allow_html=True,
+    )
 
     anos_disponiveis = sorted(df_completo["Ano"].unique().tolist())
     ano_selecionado = st.selectbox(
@@ -95,10 +121,12 @@ st.session_state["funcoes_selecionadas"] = funcoes_selecionadas
 # Navegação multipage
 # ---------------------------------------------------------------------------
 paginas = [
-    st.Page("pages/1_visao_geral.py", title="Visão Geral", icon="📊", default=True),
-    st.Page("pages/2_explorar.py", title="Explorar", icon="🔍"),
-    st.Page("pages/3_simulador.py", title="Simulador", icon="⚙️"),
+    st.Page("pages/1_visao_geral.py", title="Visão Geral", icon=":material/dashboard:", default=True),
+    st.Page("pages/2_explorar.py", title="Explorar", icon=":material/search:"),
+    st.Page("pages/3_simulador.py", title="Simulador", icon=":material/tune:"),
 ]
 
 nav = st.navigation(paginas)
 nav.run()
+
+footer()

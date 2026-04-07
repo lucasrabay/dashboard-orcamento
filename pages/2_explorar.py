@@ -8,6 +8,7 @@ import plotly.express as px
 import streamlit as st
 
 from components.gemini_insights import exibir_insight, montar_contexto_comparativo
+from components.ui import page_header, section_header
 
 # ---------------------------------------------------------------------------
 # Guard
@@ -32,12 +33,19 @@ COLUNAS_VALOR = [
 # ---------------------------------------------------------------------------
 # 1. Título
 # ---------------------------------------------------------------------------
-st.title("🔍 Explorar o Orçamento")
-st.caption("Navegue pelo orçamento em profundidade e compare áreas ao longo do tempo")
+page_header(
+    icon_name="search",
+    title="Explorar",
+    subtitle="Navegue pelo orçamento em profundidade e compare áreas ao longo do tempo",
+)
 
 # ---------------------------------------------------------------------------
 # 2. Sunburst — composição hierárquica
 # ---------------------------------------------------------------------------
+section_header(
+    title="Drill-down hierárquico",
+    subtitle=f"Composição do orçamento de {ano}",
+)
 df_sun = (
     df_filtrado[df_filtrado[metrica] > 0]
     .groupby(["Nome Função", "Nome Subfunção"], as_index=False)[metrica]
@@ -52,8 +60,6 @@ else:
         path=["Nome Função", "Nome Subfunção"],
         values=metrica,
         color="Nome Função",
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        title=f"Drill-down do orçamento — {ano}",
     )
     fig_sun.update_traces(
         hovertemplate="<b>%{label}</b><br>R$ %{value:,.0f}<extra></extra>",
@@ -64,7 +70,10 @@ else:
 # ---------------------------------------------------------------------------
 # 3. Evolução temporal — line chart (usa df_completo, TODOS os anos)
 # ---------------------------------------------------------------------------
-st.divider()
+section_header(
+    title="Evolução temporal",
+    subtitle="Compare a trajetória de gastos por área ao longo dos anos",
+)
 
 # Default: top 5 funções com maior valor pago no último ano disponível
 ultimo_ano = int(df_completo["Ano"].max())
@@ -97,8 +106,6 @@ else:
         y=metrica,
         color="Nome Função",
         markers=True,
-        color_discrete_sequence=px.colors.qualitative.Set2,
-        title="Evolução do gasto por área ao longo dos anos",
     )
     fig_line.update_layout(
         height=400,
@@ -123,13 +130,12 @@ else:
         dados_por_ano[int(a)] = {"total": total_a, "maior_funcao": maior}
 
     contexto_comp = montar_contexto_comparativo(dados_por_ano)
-    exibir_insight(contexto_comp, tipo="comparativo", titulo="📈 Análise de tendência")
+    exibir_insight(contexto_comp, tipo="comparativo", titulo="Análise de tendência")
 
 # ---------------------------------------------------------------------------
 # 4. Tabela detalhada
 # ---------------------------------------------------------------------------
-st.divider()
-st.subheader("📋 Dados detalhados")
+section_header(title="Dados detalhados")
 
 with st.expander("Ver tabela completa"):
     df_tab = (
